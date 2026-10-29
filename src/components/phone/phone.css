@@ -1,0 +1,1216 @@
+/* ==========================================================================
+   THE PHONE
+   A small iPhone-inspired device that runs inside the macOS desktop. It is a
+   second presentation of the same data, so everything here reads from
+   src/data/* and src/utils/links.js — nothing is duplicated and nothing is
+   hard-coded. Geometry lives in `em`, measured from the device's own
+   font-size, so the mini preview and the full device are the same component.
+   ========================================================================== */
+
+/* The device's own box, in `em`. Every number here is the size the full phone is
+   designed at (306 × 628 CSS px) divided by its 15px font-size, so changing one
+   thing — `font-size` on `.phone-device` — scales the frame, the bezel, the
+   island and the type together. That is what lets the gutter preview and the
+   opened phone be the same component instead of two drawings. */
+.phone-slot,
+.phone-overlay {
+  --phone-h: 41.87em;
+  --phone-ratio: 306 / 628;
+  --phone-radius: 3.07em;
+  --phone-bezel: 0.6em;
+  --phone-island-w: 6.13em;
+  --phone-island-h: 1.8em;
+  --phone-gap: 0.87em;
+  /* 20px on the full device, and 13px in the preview, because it is drawn in
+     the device's own type size like everything else inside it. */
+  --phone-homebar: 1.33em;
+}
+
+/* ----------------------------------------------------------------- slot ---- */
+/* The floating preview lives in the left gutter and reserves its own measure
+   on the desktop the same way the widget rail does, so no window can be
+   dragged across it and the desktop icons above it are capped, not covered. */
+
+.phone-slot {
+  position: absolute;
+  inset: auto auto calc(var(--dock-h) + var(--desk-pad)) var(--desk-pad);
+  z-index: 4;
+  display: grid;
+  gap: 9px;
+  justify-items: start;
+}
+
+.phone-slot__preview {
+  display: block;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 18px rgb(0 0 0 / 22%));
+  transition: transform 0.2s var(--ease-out), filter 0.2s var(--ease-out);
+}
+
+.phone-slot__preview:hover {
+  filter: brightness(1.06) drop-shadow(0 16px 22px rgb(0 0 0 / 26%));
+  transform: translateY(-3px);
+}
+
+.phone-slot__preview:active {
+  transform: translateY(-1px) scale(0.995);
+}
+
+/* The focus ring lands on the caption, which is the button. */
+.phone-slot__note {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.3rem 0.65rem;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--window-bg-solid);
+  box-shadow: inset 0 0 0 1px var(--border-hairline);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), color 0.15s linear;
+}
+
+.phone-slot__note:hover {
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.phone-slot__note:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------ overlay ------ */
+
+.phone-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 115;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  justify-items: center;
+  padding: max(14px, env(safe-area-inset-top, 0px)) var(--space-5)
+    max(14px, env(safe-area-inset-bottom, 0px));
+  animation: phone-overlay-in 200ms var(--ease-out) both;
+}
+
+.phone-overlay__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: rgb(0 0 0 / 58%);
+  backdrop-filter: blur(7px) saturate(1.1);
+  -webkit-backdrop-filter: blur(7px) saturate(1.1);
+}
+
+.phone-overlay__stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+.phone-overlay__close {
+  position: absolute;
+  top: 0;
+  right: clamp(6px, 3vw, 34px);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 34px;
+  padding: 0 0.8rem;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--window-bg-solid);
+  box-shadow: inset 0 0 0 1px var(--border-hairline), var(--shadow-popover);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), color 0.15s linear;
+}
+
+.phone-overlay__close:hover {
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.phone-overlay__close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- device --- */
+/* `font-size` is the only place a pixel size of the device is chosen: scale the
+   phone by scaling one number, and the bezel, island, icons and type follow. */
+
+.phone-device {
+  position: relative;
+  z-index: 1;
+  /* Height leads, width follows the ratio: on a short screen the phone gets
+     narrower rather than turning into a squashed rounded rectangle. */
+  block-size: min(var(--phone-h), 100%);
+  aspect-ratio: var(--phone-ratio);
+  inline-size: auto;
+  max-inline-size: 100%;
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--phone-bezel);
+  border-radius: var(--phone-radius);
+  background: linear-gradient(150deg, #4a4d55 0%, #16181d 46%, #34373f 100%);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 12%) inset,
+    0 34px 70px -28px rgb(0 0 0 / 72%),
+    0 2px 0 rgb(255 255 255 / 8%) inset;
+  font-size: 15px;
+}
+
+/* The mini device in the gutter: identical markup, smaller type, and no
+   percentage to resolve — the slot has no definite height of its own, so the
+   phone's measure is pinned here and the ratio does the rest. ~194px wide. */
+.phone-slot .phone-device {
+  font-size: 9.5px;
+  block-size: var(--phone-h);
+  /* `inert` already makes the subtree unreachable; this makes sure a press on
+     the preview opens the phone instead of hitting whichever control is under the
+     finger — the wrapper, not the device, is the interactive thing here. */
+  pointer-events: none;
+}
+
+.phone-device__edge {
+  position: absolute;
+  inset: calc(var(--phone-bezel) * 0.35);
+  border-radius: calc(var(--phone-radius) - var(--phone-bezel) * 0.35);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 55%);
+  pointer-events: none;
+}
+
+.phone-island {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--phone-bezel) + 0.45em);
+  left: 50%;
+  transform: translateX(-50%);
+  inline-size: var(--phone-island-w);
+  block-size: var(--phone-island-h);
+  border-radius: 999px;
+  background: #040405;
+  box-shadow: 0 0 0 0.5px rgb(255 255 255 / 7%);
+  pointer-events: none;
+}
+
+.phone-island__lens {
+  position: absolute;
+  top: 50%;
+  right: 0.42em;
+  translate: 0 -50%;
+  inline-size: 0.62em;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #33353b 0%, #0b0c0e 62%, #040405 100%);
+}
+
+.phone-screen {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: calc(var(--phone-radius) - var(--phone-bezel) * 2);
+  background: var(--phone-screen);
+  animation: phone-screen-in 200ms var(--ease-out) both;
+}
+
+@keyframes phone-screen-in {
+  from { opacity: 0; transform: scale(0.995); }
+  to { opacity: 1; transform: none; }
+}
+
+.phone-screen--lock {
+  /* Locked, the device shows a wallpaper instead of the screen's own
+     background, so every film on it is a wash of the current ink rather than a
+     colour of its own. What used to be written here was `#fff` — true only while
+     the appearance was dark, and on a light screen it painted the clock, the
+     date and the swipe pill white on near-white. The ink is inherited from the
+     appearance instead, which is what makes the same lock readable both ways. */
+  --phone-hairline: color-mix(in srgb, var(--phone-ink) 22%, transparent);
+  --phone-surface: color-mix(in srgb, var(--phone-ink) 12%, transparent);
+  --phone-tint: color-mix(in srgb, var(--phone-ink) 20%, transparent);
+  --phone-accent: var(--phone-ink);
+  background:
+    radial-gradient(120% 88% at 50% -14%, var(--phone-wall-a) 0%, transparent 62%),
+    radial-gradient(120% 88% at 50% 116%, var(--phone-wall-b) 0%, transparent 60%),
+    linear-gradient(168deg, var(--phone-wall-c) 0%, var(--phone-screen) 72%);
+}
+
+/* ----------------------------------------------------------- status bar ---- */
+/* Real time, and the real battery when the browser reports it. Signal bars and
+   a carrier name are deliberately absent: a browser cannot know them, and
+   drawing them would be a decorative lie. */
+
+.phone-status {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.62em 1.15em 0.2em;
+  font-size: 0.78em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--phone-ink);
+}
+
+.phone-screen--lock .phone-status {
+  padding-block-start: 0.95em;
+}
+
+.phone-status__right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+}
+
+.phone-status__battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------- stack ------- */
+
+.phone-stack {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------ lock screen -- */
+
+.phone-lock {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 0.9em 0.95em calc(var(--phone-homebar) + 0.4em);
+  color: var(--phone-ink);
+  text-align: center;
+  touch-action: none;
+}
+
+.phone-lock__clock {
+  font-size: 2.6em;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.phone-lock__date {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--phone-ink-dim);
+}
+
+/* Two live tiles: the real system tile, and a greeting that reads the same
+   clock, battery and theme the macOS widgets read. */
+.phone-lock__widgets {
+  margin-block: 0.3em 0.1em;
+}
+
+/* The hairline is the lock screen's, because that is the one surface in the
+   device where a tile floats on a wallpaper rather than on the screen — so it is
+   drawn from the ink, which changes with the appearance. */
+.phone-lock__widgets .widget {
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--phone-ink) 20%, transparent);
+}
+
+/* The two round actions iOS puts above the swipe-up affordance. Both do real
+   work here: the torch switches the light/dark appearance, the camera copies
+   the page link, because a phone that only looks interactive is a prop. */
+.phone-lock__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-start: auto;
+}
+
+.phone-lock__action {
+  display: grid;
+  place-items: center;
+  inline-size: 2.6em;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(6 6 8 / 44%);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 22%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), background 0.15s linear;
+}
+
+.phone-lock__action:hover {
+  background: rgb(6 6 8 / 64%);
+}
+
+.phone-lock__action:active {
+  transform: scale(0.92);
+}
+
+.phone-lock__action--on {
+  /* The pressed state inverts the disc: whatever the screen is made of becomes
+     the fill, so the glyph stays legible without the sheet knowing the theme. */
+  background: var(--phone-ink);
+  color: var(--phone-screen);
+}
+
+.phone-lock__action:focus-visible {
+  outline: 2px solid var(--phone-ink);
+  outline-offset: 3px;
+}
+
+.phone-lock__swipe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  min-height: 2.4em;
+  margin-block: 0.15em 0;
+  padding: 0 1em;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--phone-ink) 12%, transparent);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--phone-ink) 26%, transparent);
+  color: var(--phone-ink);
+  font: inherit;
+  font-size: 0.78em;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.phone-lock__swipe:focus-visible {
+  outline: 2px solid var(--phone-ink);
+  outline-offset: 3px;
+}
+
+.phone-lock__note {
+  font-size: 0.66em;
+  color: var(--phone-ink-dim);
+}
+
+/* ----------------------------------------------------------- home screen -- */
+
+.phone-home {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding-block: 0.35em 0;
+  /* A wallpaper of its own — flat colour would make a translucent tile look
+     like a mistake rather than glass. The desktop's gradient is reused at 55%. */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--phone-wall-a) 55%, var(--phone-screen)) 0,
+    var(--phone-screen) 46%
+  );
+}
+
+.phone-home__head {
+  padding: 0 1.05em;
+}
+
+.phone-home__greeting {
+  margin: 0;
+  font-size: 1.15em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.phone-home__label {
+  color: var(--text-tertiary);
+  font-size: 0.72em;
+  line-height: 1.4;
+  margin-block: 0.1em 0;
+}
+
+.phone-home__intro {
+  color: var(--text-tertiary);
+  font-size: 0.72em;
+  line-height: 1.4;
+  margin: 0.5em 0 0;
+}
+
+.phone-home__scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 0.7em 0.85em 0.4em;
+  display: grid;
+  gap: 0.85em;
+  align-content: start;
+}
+
+.phone-home__apps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7em 0.35em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* --- Tiles inside the device ------------------------------------------------
+   The desktop sheet sizes these components in px for a 176px square. Inside the
+   phone the same components are measured from the device's font-size instead, so
+   the gutter preview and the opened phone scale together and neither re-declares
+   the tile's type: one block here, for the one screen that carries tiles. */
+/* The lock screen band: one column, which is what iOS stacks above the clock.
+   A pair of squares was the shape the home screen used, and it is gone; forcing a
+   four-row list into a square only cut its last row off. `HomeWidgets` brings its
+   own stack element, so the grid is declared on it as well. The device's home
+   screen has no band at all — apps only — so nothing below is scoped to it. */
+.phone-widgets,
+.phone-widgets .widget-stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5em;
+}
+
+.phone-widgets .widget {
+  /* Sized by what it has to say: the desktop sheet draws every tile as a square
+     for the rail, and inside the device the greeting is three lines and the
+     machine list is four rows, so the square is undone here rather than left to
+     pad the tile out with nothing. */
+  --widget-size: auto;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: auto;
+  gap: 0.3em;
+  padding: 0.62em 0.68em;
+  border-radius: 1.1em;
+  font-size: 0.78em;
+}
+
+/* The greeting tile is a sheet of the same glass as its neighbour, in the
+   device's own units — its type is set here rather than inheriting the browser
+   default for a <p>. It used to be filled with the accent, which made it the
+   loudest object on a black screen; the hue is left to the one line on the tile
+   that is a greeting rather than a reading. */
+.phone-widgets .widget--welcome {
+  text-align: start;
+}
+
+.phone-widgets .widget--welcome .welcome__hello {
+  color: var(--accent);
+}
+
+.phone-widgets .welcome {
+  display: grid;
+  align-content: center;
+  gap: 0.15em;
+  min-height: 0;
+}
+
+.phone-widgets .welcome__hello,
+.phone-widgets .welcome__meta {
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.3;
+  opacity: 0.86;
+}
+
+
+/* An icon sized by an attribute is a fixed pixel; this makes it follow the tile. */
+.phone-widgets .weather__glyph {
+  width: 1.7em;
+  height: 1.7em;
+}
+
+.phone-widgets .weather {
+  gap: 0.15em;
+}
+
+.phone-widgets .widget__caption,
+.phone-widgets .widget__row,
+.phone-widgets .widget__empty,
+.phone-widgets .widget__loading,
+.phone-widgets .clock__date,
+.phone-widgets .clock__zone,
+.phone-widgets .weather__range,
+.phone-widgets .weather__meta {
+  font-size: 0.9em;
+}
+
+.phone-widgets .clock__time {
+  font-size: 1.34em;
+}
+
+.phone-widgets .weather__temp {
+  font-size: 2.1em;
+}
+
+.phone-widgets .weather__unit {
+  font-size: 1.1em;
+}
+
+.phone-widgets .weather__condition {
+  font-size: 0.98em;
+}
+
+/* A square this small cannot also host a dial at the desktop's 88px, and a list
+   of three rows does not need separators at this height. */
+.phone-widgets .clock__face {
+  width: min(100%, 5em);
+}
+
+.phone-widgets .widget__row {
+  gap: 0.4em;
+  padding: 0.22em 0;
+}
+
+.phone-widgets .widget__row + .widget__row {
+  border-top: 0;
+}
+
+/* --- App icons ------------------------------------------------------------ */
+.phone-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.16s var(--ease-out);
+}
+
+.phone-icon:active {
+  transform: scale(0.94);
+}
+
+.phone-icon {
+  /* One custom property per tile: the accent comes from data, and a tile with
+     no colour in the data simply inherits the accent rather than a guess. */
+  --phone-app-bg: var(--phone-tint);
+}
+
+.phone-icon__tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.55em;
+  aspect-ratio: 1;
+  border-radius: 0.85em;
+  background: var(--phone-app-bg);
+  box-shadow:
+    inset 0 0 0 0.5px var(--phone-hairline),
+    inset 0 0.45em 0.7em rgb(255 255 255 / 26%),
+    0 0.35em 0.75em -0.25em rgb(0 0 0 / 35%);
+  color: #fff;
+}
+
+.phone-icon__tile--link {
+  background: var(--phone-surface);
+  color: var(--text-secondary);
+}
+
+.phone-icon__badge {
+  position: absolute;
+  top: -0.25em;
+  right: -0.35em;
+  min-width: 1.25em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: var(--phone-tint);
+  color: var(--accent-contrast);
+  font-size: 0.5em;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.phone-icon__label {
+  max-width: 100%;
+  font-size: 0.62em;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phone-screen--lock .phone-icon__label {
+  color: var(--phone-ink-dim);
+}
+
+/* ------------------------------------------------------------------ dock --- */
+
+.phone-dock {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.35em;
+  margin: 0 0.6em calc(var(--phone-gap) * 0.55);
+  padding: 0.55em 0.5em;
+  border-radius: 1.5em;
+  background: var(--phone-surface);
+  box-shadow: inset 0 0 0 0.5px var(--phone-hairline);
+}
+
+.phone-dock .phone-icon__label {
+  display: none;
+}
+
+/* Inside an app the dock becomes a two-action tab bar, like iOS does. */
+/* Every screen change fades and lifts in, the way an app does on iOS. */
+.phone-stack > .phone-app,
+.phone-stack > .phone-home {
+  animation: phone-screen-in 200ms var(--ease-out) both;
+}
+
+.phone-app__nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.5em 0.55em 0.55em;
+  border-block-end: 1px solid var(--phone-hairline);
+  font-size: 0.86em;
+}
+
+.phone-app__title {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.95em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--phone-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.phone-app__back,
+.phone-app__home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  min-height: 2.1em;
+  padding: 0 0.6em;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: none;
+  color: var(--phone-accent);
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.phone-app__back:hover,
+.phone-app__home:hover {
+  background: var(--fill-hover);
+}
+
+.phone-app__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 0.85em 0.85em 1.1em;
+  display: grid;
+  gap: 0.85em;
+  align-content: start;
+  color: var(--phone-ink);
+  touch-action: pan-y;
+}
+
+.phone-app__foot {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: center;
+  gap: 0.5em;
+  padding: 0.55em 0.85em calc(var(--phone-gap) * 0.55);
+  border-block-start: 1px solid var(--phone-hairline);
+}
+
+/* --- Content blocks reused by every app screen ---------------------------- */
+
+.phone-card {
+  padding: 0.8em 0.85em;
+  border-radius: 1.1em;
+  background: var(--phone-surface);
+  box-shadow: inset 0 0 0 0.5px var(--phone-hairline);
+}
+
+.phone-card__title {
+  margin: 0 0 0.35em;
+  font-size: 0.86em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.phone-card__text {
+  margin: 0;
+  font-size: 0.8em;
+  line-height: 1.5;
+  color: var(--phone-ink-dim);
+}
+
+.phone-section-title {
+  margin: 0.2em 0.15em -0.3em;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* a row you press — the iPhone list pattern */
+.phone-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6em;
+  width: 100%;
+  min-height: 2.9em;
+  padding: 0.5em 0.7em;
+  border: 0;
+  border-radius: 0.9em;
+  background: var(--phone-surface);
+  box-shadow: inset 0 0 0 0.5px var(--phone-hairline);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-row:active {
+  filter: brightness(0.94);
+}
+
+.phone-row__icon {
+  display: grid;
+  place-items: center;
+  inline-size: 1.9em;
+  aspect-ratio: 1;
+  border-radius: 0.55em;
+  background: var(--phone-tint);
+  color: #fff;
+}
+
+.phone-row__label {
+  display: grid;
+  gap: 0.1em;
+  min-width: 0;
+}
+
+.phone-row__title {
+  font-size: 0.84em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--phone-ink);
+}
+
+.phone-row__sub {
+  font-size: 0.72em;
+  line-height: 1.35;
+  color: var(--text-tertiary);
+  /* The address is the longest string any row carries, and at 320px of screen an
+     unbroken one is wider than the phone. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.phone-row__go {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.phone-row__list {
+  display: grid;
+  gap: 0.4em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+}
+
+.phone-chip {
+  padding: 0.25em 0.6em;
+  border-radius: var(--r-pill);
+  background: var(--phone-surface);
+  box-shadow: inset 0 0 0 0.5px var(--phone-hairline);
+  color: var(--phone-ink);
+  font-size: 0.72em;
+  font-weight: 600;
+}
+
+.phone-chip--muted {
+  color: var(--text-tertiary);
+}
+
+.phone-facts {
+  display: grid;
+  gap: 0.3em;
+  margin: 0;
+}
+
+.phone-facts__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8em;
+  font-size: 0.78em;
+}
+
+.phone-facts__row dt {
+  color: var(--text-tertiary);
+}
+
+.phone-facts__row dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--phone-ink);
+  text-align: end;
+}
+
+.phone-bullets {
+  display: grid;
+  gap: 0.4em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phone-bullets li {
+  position: relative;
+  padding-inline-start: 1.05em;
+  font-size: 0.79em;
+  line-height: 1.45;
+  color: var(--phone-ink-dim);
+}
+
+.phone-bullets li::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.52em;
+  inset-inline-start: 0.2em;
+  inline-size: 0.34em;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--phone-tint);
+}
+
+.phone-tile-art {
+  inline-size: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 0.9em;
+  overflow: hidden;
+}
+
+.phone-tile-art > * {
+  width: 100%;
+  height: 100%;
+}
+
+.phone-call {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  width: 100%;
+  min-height: 2.6em;
+  padding: 0 1em;
+  border: 0;
+  border-radius: 0.85em;
+  background: var(--phone-tint);
+  color: #fff;
+  font: inherit;
+  font-size: 0.82em;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-call:active {
+  transform: scale(0.985);
+}
+
+/* --- Settings: a real control, writing the same key as System Settings ---- */
+
+.phone-settings__group {
+  display: grid;
+  gap: 0.5em;
+}
+
+.phone-settings__legend {
+  padding: 0 0.15em;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.phone-segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.2em;
+  padding: 0.2em;
+  border-radius: 0.85em;
+  background: var(--phone-surface);
+  box-shadow: inset 0 0 0 0.5px var(--phone-hairline);
+}
+
+.phone-segmented__option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  min-height: 2.1em;
+  padding: 0 0.4em;
+  border: 0;
+  border-radius: 0.7em;
+  background: none;
+  color: var(--phone-ink-dim);
+  font: inherit;
+  font-size: 0.76em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s var(--ease-out), color 0.18s linear;
+}
+
+.phone-segmented__option[aria-checked='true'] {
+  background: var(--phone-screen);
+  color: var(--phone-ink);
+  box-shadow: 0 0.15em 0.4em rgb(0 0 0 / 18%);
+}
+
+.phone-settings__hint {
+  margin: 0;
+  font-size: 0.72em;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+/* --------------------------------------------------------- home indicator -- */
+/* Inside the device it is the iOS affordance and, like the desktop indicator,
+   a real control: it leaves the app. */
+
+.phone-homebar {
+  position: absolute;
+  z-index: 3;
+  inset: auto 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: var(--phone-homebar);
+  pointer-events: none;
+}
+
+.phone-homebar__button {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.phone-homebar__button:disabled {
+  cursor: default;
+}
+
+.phone-homebar__bar {
+  inline-size: 35%;
+  block-size: 0.22em;
+  margin-block-end: 0.28em;
+  border-radius: 999px;
+  background: var(--phone-ink);
+  opacity: 0.62;
+  transition: opacity 0.18s var(--ease-out), transform 0.18s var(--ease-out);
+}
+
+.phone-homebar__button:hover:not(:disabled) .phone-homebar__bar {
+  opacity: 0.9;
+  transform: scaleX(1.06);
+}
+
+.phone-homebar__button:disabled .phone-homebar__bar {
+  opacity: 0.28;
+}
+
+.phone-homebar__button:focus-visible {
+  outline: 2px solid var(--phone-accent);
+  outline-offset: -3px;
+  border-radius: 0.6em;
+}
+
+/* --------------------------------------------------------- a11y and touch -- */
+
+/* The contribution graph inside a phone screen: the same 53 columns, smaller
+   squares, and the year scrolls sideways rather than being cropped to a month. The
+   Mon/Wed/Fri gutter is dropped because at this size it costs more width than the
+   labels return — the tooltip on each square still names its day. */
+@media (max-width: 767px), (max-height: 560px) and (pointer: coarse) {
+  .contrib {
+    --contrib-cell: 9px;
+    --contrib-gap: 2px;
+  }
+
+  .contrib__weekdays {
+    display: none;
+  }
+
+  .contrib__figure {
+    padding: var(--space-3);
+  }
+
+  .contrib__legend .contrib__cell {
+    width: 9px;
+    height: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-screen,
+  .phone-overlay,
+  .phone-stack > .phone-app,
+  .phone-stack > .phone-home {
+    animation: none !important;
+  }
+
+  .phone-icon,
+  .phone-lock__action,
+  .phone-row,
+  .phone-call,
+  .phone-segmented__option,
+  .phone-homebar__bar,
+  .phone-overlay__close {
+    transition: none;
+  }
+
+  .phone-icon:active,
+  .phone-lock__action:active,
+  .phone-call:active {
+    transform: none;
+  }
+}
+
+/* Touch: fingers, not cursors. */
+/* Touch targets: the opened phone is a thing you press, so its controls get a
+   40px floor. The preview in the gutter is a picture of it and is `inert`, and
+   giving *it* the same floor would only stretch the drawing — hence the
+   `.phone-overlay` scope on every rule here. */
+@media (pointer: coarse) {
+  .phone-overlay .phone-icon,
+  .phone-overlay .phone-row,
+  .phone-overlay .phone-lock__action,
+  .phone-overlay .phone-segmented__option,
+  .phone-overlay .phone-app__back,
+  .phone-overlay .phone-app__home {
+    min-height: 40px;
+  }
+
+  .phone-overlay .phone-icon:active,
+  .phone-overlay .phone-lock__action:active,
+  .phone-overlay .phone-call:active {
+    transform: none;
+  }
+
+  .phone-overlay .phone-row:active {
+    filter: none;
+    background: var(--fill-active);
+  }
+
+  .phone-slot__note {
+    min-height: 40px;
+  }
+}
+
+@media (forced-colors: active) {
+  .phone-device,
+  .phone-card,
+  .phone-row,
+  .phone-chip,
+  .phone-segmented {
+    border: 1px solid CanvasText;
+  }
+
+  .phone-icon__tile {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+}
+
+/* ------------------------------------------------- desktop integration ---- */
+/* The mini device lives in a reserved gutter, so it floats over the wallpaper
+   without ever hiding a window behind it. The media query string is repeated
+   from useMediaQuery's PHONE_MEDIA exactly; below it the slot is not rendered
+   at all, and `--phone-space` stays 0px so the desktop keeps its own padding. */
+
+@media (min-width: 1240px) and (min-height: 700px) {
+  /* 194px is what the mini device measures at its own font-size, and the extra
+     padding is the desktop's gutter on both sides of it. */
+  .desktop {
+    --phone-space: 194px;
+  }
+
+  .desktop .desktop__surface {
+    inset: var(--desk-pad) var(--desk-pad) calc(var(--dock-h) + var(--desk-pad))
+      calc(var(--phone-space) + (var(--desk-pad) * 2));
+  }
+
+  .desktop .desktop__icons {
+    left: calc(var(--rail-space) + var(--desk-pad));
+  }
+}

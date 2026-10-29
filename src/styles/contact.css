@@ -1,0 +1,295 @@
+/* ==========================================================================
+   CONTACT WINDOW — one primary channel, a list of the rest, a side rail
+   ========================================================================== */
+
+.contact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 244px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.contact-col {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.contact-col__label {
+  margin-bottom: var(--space-2);
+}
+
+/* ------------------------------------------------------------ email --- */
+/* The card is the measure the address has to fit, so the container is the card: the
+   window is resized freely here, and a phone is 390px of it. */
+.email-card {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 58%),
+    var(--window-elevated);
+  box-shadow: var(--shadow-card);
+}
+
+.email-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.email-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  background: var(--fill-subtle);
+  color: var(--text-primary);
+}
+
+.email-card__text {
+  min-width: 0;
+}
+
+/* .mono only supplies the family; this rule has to win over it regardless of
+   stylesheet order, hence the compound selector. */
+.email-card__address.mono {
+  display: block;
+  margin: 1px 0 3px;
+  /* 17px while the card has room, down to 14px as it narrows — a few px off the size
+     is what keeps an address on one line here, and the break below is what keeps it
+     on the screen when even that is too wide. Stated twice for browsers with no
+     container queries: they keep the larger, fixed size. */
+  font-size: var(--text-lg);
+  /* The slope is measured, not guessed: 17px needs about 390px of card and 14px is
+     what a 300px card can actually hold, so 3.2cqw + 4.6px is the line between them
+     and the clamp's floor keeps any narrower card at 14px rather than going smaller. */
+  font-size: clamp(0.875rem, 3.2cqw + 0.29rem, var(--text-lg));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.email-card__address:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.email-card__note {
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+  color: var(--text-tertiary);
+  max-width: 46ch;
+}
+
+.email-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------- channels --- */
+.channels {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.channel {
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--r-md);
+  background: var(--window-elevated);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  text-align: left;
+}
+
+a.channel:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+  text-decoration: none;
+}
+
+.channel__icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--channel-accent, var(--accent)) 16%, transparent);
+  color: var(--channel-accent, var(--accent));
+  flex: none;
+}
+
+.channel__text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.channel__label {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.channel__value {
+  font-size: var(--text-sm);
+  font-weight: 550;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel__note {
+  margin-left: auto;
+  flex: none;
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+.channel__go {
+  flex: none;
+  color: var(--text-tertiary);
+  transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.channel:hover .channel__go {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+/* ----------------------------------------------------------- sidebar --- */
+.contact-side {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.availability-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--r-md);
+  background: var(--window-elevated);
+  box-shadow: var(--shadow-card);
+}
+
+/* the tint is the status, not a decoration: an empty config stays neutral */
+.availability-card--available {
+  background: color-mix(in srgb, var(--status-available) 10%, var(--window-elevated));
+}
+
+.availability-card--busy {
+  background: color-mix(in srgb, var(--status-busy) 10%, var(--window-elevated));
+}
+
+.availability-card--away {
+  background: color-mix(in srgb, var(--status-away) 12%, var(--window-elevated));
+}
+
+.availability-card--unset {
+  box-shadow: var(--shadow-card), inset 0 0 0 0.5px var(--border-hairline);
+}
+
+.availability-card__title {
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.availability-card__text {
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.side-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--r-md);
+  background: var(--window-sunken);
+  box-shadow: inset 0 0 0 0.5px var(--border-hairline);
+}
+
+.side-card__title {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.side-card__list {
+  display: grid;
+  gap: 6px;
+}
+
+.side-card__list li {
+  position: relative;
+  padding-left: 11px;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.side-card__list li::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.side-card__text {
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.side-card--link {
+  align-content: start;
+}
+
+.side-card--link .btn {
+  justify-self: start;
+}
+
+/* --------------------------------------------------------------- notes --- */
+.fineprint {
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+/* one column whenever the side rail would squeeze the channels */
+@media (max-width: 720px) {
+  .contact-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .channel__note {
+    display: none;
+  }
+}

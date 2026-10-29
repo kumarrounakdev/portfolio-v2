@@ -1,0 +1,699 @@
+/* ==========================================================================
+   GLOBAL RESET + PRIMITIVES
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--desk-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  overscroll-behavior: none;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+ul,
+ol,
+dl {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+/* Balanced headings and easier prose to read; browsers ignore what they do not know. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Chrome on Windows/Linux gets themed scrollbars instead of its default light grey. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--r-pill);
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Mobile taps must not flash a grey box over a glass surface. */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* One visible focus style for every interactive element, both appearances. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* ------------------------------------------------------------ a dissolve ---- */
+/* Switching appearances used to cross-fade the flat surfaces and snap everything
+   else, because the desktop, the glass, the tiles and the dock are all
+   *gradients* now and a gradient does not transition. So the appearance you are
+   leaving is held on a veil above the interface and dissolved away: the four
+   desktop colours of the outgoing theme, read off the root a moment before they
+   changed and painted the way the wallpaper paints them. One composited layer,
+   so a phone gets the same dissolve as a Mac while nothing in the tree animates.
+   `--dur-slow` is the duration, so a visitor who asked for stillness gets a
+   dissolve of one millisecond even if a veil ever reaches them. */
+.theme-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 8% 4%, var(--veil-a, transparent) 0%, transparent 58%),
+    radial-gradient(100% 80% at 96% 96%, var(--veil-b, transparent) 0%, transparent 60%),
+    radial-gradient(90% 70% at 62% 100%, var(--veil-c, transparent) 0%, transparent 55%),
+    var(--veil-base, var(--desk-base));
+  animation: theme-veil var(--dur-slow) var(--ease-in-out) both;
+}
+
+@keyframes theme-veil {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ---------------------------------------------------------------- text ---- */
+.eyebrow {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+}
+
+.section-sub {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-ligatures: none;
+}
+
+.prose p + p {
+  margin-top: var(--space-3);
+}
+
+.prose p {
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: 1.62;
+  max-width: 68ch;
+}
+
+/* ------------------------------------------------------------- layout ---- */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stack--tight {
+  gap: var(--space-2);
+}
+
+.stack--loose {
+  gap: var(--space-6);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.row--between {
+  justify-content: space-between;
+}
+
+/* -------------------------------------------------------------- button ---- */
+.btn {
+  --btn-bg: var(--btn-neutral-bg);
+  --btn-fg: var(--btn-neutral-fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 34px;
+  border-radius: var(--r-md);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--text-sm);
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: var(--shadow-hairline), var(--shadow-inset);
+  transition: background-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-xs) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  text-decoration: none;
+  background: color-mix(in srgb, var(--btn-bg) 88%, var(--text-primary) 12%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hairline), var(--shadow-inset), 0 5px 12px -6px rgba(0, 0, 0, 0.28);
+  }
+}
+
+.btn:active {
+  transform: scale(0.975);
+}
+
+.btn[disabled],
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.btn--md {
+  height: 36px;
+  font-size: var(--text-sm);
+}
+
+.btn--sm {
+  height: 28px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--r-sm);
+}
+
+.btn--lg {
+  height: 42px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-md);
+  border-radius: var(--r-lg);
+}
+
+.btn--primary {
+  --btn-bg: var(--btn-primary-bg);
+  --btn-fg: var(--btn-primary-fg);
+  font-weight: 600;
+}
+
+.btn--tinted {
+  --btn-bg: var(--btn-tinted-bg);
+  --btn-fg: var(--accent);
+  font-weight: 600;
+}
+
+.btn--neutral {
+  --btn-bg: var(--btn-neutral-bg);
+  --btn-fg: var(--btn-neutral-fg);
+}
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--text-secondary);
+  box-shadow: none;
+}
+
+.btn--ghost:hover {
+  background: var(--fill-hover);
+  color: var(--text-primary);
+}
+
+
+
+
+.btn__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn__icon {
+  flex: none;
+  opacity: 0.85;
+}
+
+.btn__icon--trail {
+  margin-left: 2px;
+  opacity: 0.6;
+}
+
+/* --------------------------------------------------------------- chip ---- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-2);
+  border-radius: var(--r-sm);
+  background: var(--fill-quaternary);
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.chip--tech {
+  background: var(--fill-quaternary);
+  color: var(--text-secondary);
+  box-shadow: inset 0 0 0 0.5px var(--border-hairline);
+}
+
+.chip--category {
+  background: transparent;
+  color: var(--text-tertiary);
+  box-shadow: inset 0 0 0 0.5px var(--border);
+}
+
+.chip--featured {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 650;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------------- kbd ---- */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--r-xs);
+  background: var(--window-elevated);
+  box-shadow: 0 0 0 0.5px var(--border), 0 1px 0 var(--border);
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------- app icons ---- */
+.app-icon {
+  --icon-size: var(--dock-icon);
+  /* Three layers, the way a piece of tinted glass actually reads. The body is
+     the app's own colour, lit from the top left; the sheet above it is the
+     desktop's glass, and it is what turns nine different hues into one material
+     — the colour is still there, you see it through the veil; and the glyph sits
+     on top of both. An app may move the body's two stops with `art`. */
+  /* The app's colour arrives and the first thing done to it is to take the
+     chroma out, against a grey the appearance supplies: what survives is a
+     shade, not a sticker. `oklab` is the mix that does this without moving the
+     lightness, so a warm tile and a cool one still differ — by temperature
+     rather than by poster — and the veil above them finishes the job. */
+  --icon-hue: color-mix(in oklab, var(--icon-accent, var(--accent)) 44%, var(--icon-neutral));
+  --icon-from: color-mix(in srgb, var(--icon-hue) 88%, white 12%);
+  --icon-to: color-mix(in srgb, var(--icon-hue) 74%, black 26%);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-radius: var(--r-squircle);
+  background: linear-gradient(152deg, var(--icon-from), var(--icon-hue) 46%, var(--icon-to));
+  color: var(--icon-ink);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 7px 16px -9px rgba(0, 0, 0, 0.5);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.app-icon--plate::before {
+  content: '';
+  position: absolute;
+  inset: 11%;
+  border-radius: 26%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04));
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.26),
+    0 1px 2px rgba(0, 0, 0, 0.14);
+}
+
+/* The veil. Its alpha is the whole trick: at these numbers the hue underneath
+   survives as a shade rather than a sticker, the top edge keeps a specular line,
+   and the tile reads as the same substance whether it is on a wallpaper or in a
+   dock. `z-index` on the glyph is what keeps it above this layer. */
+.app-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    168deg,
+    color-mix(in srgb, var(--icon-glass-a) 62%, transparent),
+    color-mix(in srgb, var(--icon-glass-b) 76%, transparent) 82%
+  );
+  box-shadow:
+    inset 0 0 0 0.5px var(--icon-rim),
+    inset 0 1px 0 color-mix(in srgb, white 34%, transparent);
+  pointer-events: none;
+}
+
+/* A tile for a thing that has no colour of its own gets the sheet with nothing
+   under it — the same object, empty rather than painted. */
+.app-icon--muted {
+  background: linear-gradient(
+    168deg,
+    color-mix(in srgb, var(--text-tertiary) 18%, var(--window-elevated)),
+    color-mix(in srgb, var(--text-tertiary) 10%, var(--window-elevated))
+  );
+  color: var(--text-secondary);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.22),
+    0 0 0 0.5px var(--border);
+}
+
+.app-icon--muted::after {
+  background: linear-gradient(
+    168deg,
+    color-mix(in srgb, var(--icon-glass-a) 34%, transparent),
+    color-mix(in srgb, var(--icon-glass-b) 26%, transparent) 82%
+  );
+}
+
+.app-icon__glyph {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+
+/* ----------------------------------------------------------- tooltip ---- */
+/* The battery mark is drawn onto the text line it shares: width comes from the
+   size of the type around it, and the viewBox keeps its proportions, so the same
+   component fits a 22px menu-bar pill and a 9.5px phone preview without a
+   per-context pixel value. */
+.battery-gauge {
+  display: block;
+  flex: none;
+  width: 1.9em;
+  height: auto;
+}
+
+.battery-gauge rect {
+  transition: fill var(--dur-fast) linear;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip__bubble {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 40;
+  padding: 4px 9px;
+  border-radius: var(--r-sm);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  font-size: var(--text-xs);
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: var(--shadow-popover);
+  backdrop-filter: var(--backdrop-blur-soft);
+  -webkit-backdrop-filter: var(--backdrop-blur-soft);
+  opacity: 0;
+  transform: translate(-50%, 4px) scale(0.96);
+  transform-origin: bottom center;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  pointer-events: none;
+}
+
+.tooltip__bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -3px;
+  border-radius: 1px;
+  background: var(--tooltip-bg);
+  transform: rotate(45deg);
+}
+
+/* Hover, and *keyboard* focus — not any focus. A bubble that also answers to
+   `:focus-within` stays on screen after a mouse click, because the control it
+   describes keeps the focus that click gave it: clicking a Dock tile left its
+   label hanging over the bar until the reader clicked empty space to blur it.
+   `:focus-visible` is exactly that distinction, and it is the browser's own — a
+   mouse press does not qualify, a Tab does. The query is how a parent asks about
+   it; in a browser without `:has()` the bubble is hover-only, and the control
+   still has its visible focus ring and its accessible name. */
+.tooltip:hover .tooltip__bubble {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+@supports selector(:has(:focus-visible)) {
+  .tooltip:has(:focus-visible) .tooltip__bubble {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.tooltip--bottom .tooltip__bubble {
+  bottom: auto;
+  top: calc(100% + 12px);
+  transform: translate(-50%, -4px) scale(0.96);
+}
+
+.tooltip--bottom .tooltip__bubble::after {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: -3px;
+}
+
+/* ------------------------------------------------------- status + dot ---- */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-available);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-available) 22%, transparent);
+  flex: none;
+}
+
+.status-dot--busy {
+  background: var(--status-busy);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-busy) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .status-dot--pulse {
+    animation: status-pulse 2.6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes status-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-available) 22%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--status-available) 8%, transparent);
+    }
+  }
+}
+
+/* ----------------------------------------------------------- scrollbars ---- */
+.scroll-area {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fill-subtle) transparent;
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+  background: var(--fill-subtle);
+  border: 3px solid transparent;
+  border-radius: var(--r-pill);
+  background-clip: padding-box;
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text-tertiary) 55%, transparent);
+  background-clip: padding-box;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ------------------------------------------------------- generic cards ---- */
+.card {
+  border-radius: var(--r-lg);
+  background: var(--window-elevated);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+}
+
+.icon-tile {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  background: var(--fill-quaternary);
+  color: var(--text-secondary);
+  flex: none;
+}
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-state__title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}

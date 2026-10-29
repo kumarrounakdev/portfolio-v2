@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+*.local
+npm-debug.log*
+screenshots/
+
+# Local-only files — never pushed to GitHub
+commands.txt
+*.tmp
+*.bak
+Thumbs.db
+.config/

@@ -1,0 +1,710 @@
+/* ==========================================================================
+   THE PHONE PRESENTATION — an iPhone, not a small Mac
+   Everything here is scoped to `max-width: 767px`, which is the same query the
+   JavaScript uses to decide to render the home screen at all, so the two layers
+   cannot drift apart. What changes is the furniture: the menu bar becomes a
+   status bar, windows become full-bleed apps with a nav bar and one close
+   action, the Dock becomes a dock that only shows its labels inside an app, the
+   home screen owns the widgets, and the home indicator is how you leave.
+   ========================================================================== */
+
+@media (max-width: 767px), (max-height: 560px) and (pointer: coarse) {
+  :root {
+    /* the indicator band, the bar, and the bar's own height — one token each,
+       so the sheet ends exactly where the bar begins instead of overlapping it */
+    --ios-indicator-h: 20px;
+    --ios-inset: 16px;
+    --ios-radius: 26px;
+
+    /* The only translucent thing left on this screen is the one control in the
+       bar, and it needs one hairline to be seen at all. Nothing blurs: the tiles
+       that justified a sheet of frosted glass are gone from a phone's home screen
+       (see IphoneHome.jsx), and a blur with one small user is a filter paid for
+       nothing. Sized in rem, so View ▸ Zoom lifts the bar with the text instead
+       of leaving a clipped row behind. */
+    --ios-rim: color-mix(in srgb, var(--text-primary) 12%, transparent);
+
+    /* The pill is a little shorter than an iPhone's island and the control is
+       kept inside it, because the island is hardware you look *past*, not a
+       banner: it names the app you are in and takes nothing else. */
+    --bar-island-h: 1.85rem;
+    --bar-control: 1.66rem;
+    --bar-pad: 0.3rem;
+    --bar-gap: 0.3rem;
+    --menubar-h: calc(var(--bar-island-h) + var(--bar-pad) * 2 + env(safe-area-inset-top, 0px));
+    /* The island is the one black object on the screen in either appearance: an
+       iPhone's hardware does not change colour with its wallpaper. */
+    --ios-island: #050506;
+    --ios-island-fg: #fff;
+
+    /* The dock is the tile, the caption under it and the 20px the home indicator
+       is owed: 5.75rem, and no more, because every pixel of it comes off the rows
+       of icons above. A landscape phone has the width for big tiles and not the
+       height for their captions, so it keeps a smaller tile and no labels. */
+    --dock-h: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* The app runs under the status bar, as an app does; only the home screen is
+     pushed clear of it. */
+  .desktop__surface {
+    inset: 0 0 var(--dock-h) 0;
+  }
+
+  /* ------------------------------------------------------- the status bar -- */
+  /* The iPhone 14 arrangement, built from the DOM order the desktop already
+     uses: the time at the leading edge, the readings at the trailing edge, and
+     the black pill between them naming the app you are in. Nothing else gets a
+     background — the wallpaper is this app's own gradient, the type colour is
+     chosen with it, so bare type stays legible and no band of chrome is painted
+     across a home screen. `1fr auto 1fr` keeps the pill exactly centred no
+     matter how long either side is, which is what the notch region looks like. */
+
+  .menubar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    background: transparent;
+    border-bottom: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    color: var(--text-primary);
+    padding:
+      calc(env(safe-area-inset-top, 0px) + var(--bar-pad))
+      calc(12px + env(safe-area-inset-right, 0px)) var(--bar-pad)
+      calc(12px + env(safe-area-inset-left, 0px));
+    gap: 0;
+    font-size: max(13.5px, 0.84rem);
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+
+  .menubar::after {
+    display: none;
+  }
+
+  /* The time, at the left edge, as iOS puts it: bold, tabular, and the first
+     thing in the row's reading order. */
+  .menubar__clock {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    padding: 0;
+  }
+
+  /* The island. Black in both appearances, because on an iPhone that is what the
+     hardware reads as. It is not a control and it is not a shelf: it holds the
+     name of the app you are in, and when nothing is open it holds nothing, which
+     is the same thing the notch on the device in your hand does. The minimum
+     width is what makes an empty pill read as hardware rather than as a bug. */
+  .menubar__left {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-inline-size: min(7.6rem, 44vw);
+    height: var(--bar-island-h);
+    padding: 0 0.6rem;
+    border-radius: var(--r-pill);
+    background: var(--ios-island);
+    color: var(--ios-island-fg);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  }
+
+  /* The name of the app you are in, clamped rather than allowed to push the
+     readings off the edge: 25-character titles exist in this registry. */
+  /* A cap, not a target: the two reading clusters share what is left, and an
+     uncapped label would push them under the island. */
+  .menubar__app {
+    display: block;
+    min-width: 0;
+    max-width: min(38vw, 8rem);
+    overflow: hidden;
+    font-size: 0.86em;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* The readings, at the right edge, with the one control that changes
+     something at their end. */
+  .menubar__right {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: var(--bar-gap);
+    min-width: 0;
+    padding: 0;
+  }
+
+  /* Every item is one box — reading or button — with the same height and
+     the tap floor, so a control in the bar is never smaller than one inside a
+     window, and nothing sits higher or lower than its neighbour. The type inside
+     is all that varies. */
+  /* The brand button is not in this list because it is not in this layout: on a
+     phone the bar holds the time, the readings and one control. */
+  .menubar__clock,
+  .menubar__status,
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    height: var(--bar-control);
+    min-width: var(--bar-control);
+    padding: 0 0.4em;
+    border-radius: var(--r-pill);
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    white-space: nowrap;
+    transition: background-color var(--dur-xs) linear, transform var(--dur-xs) linear;
+  }
+
+  /* A home screen has no menus and no brand button: File ▸ Open is the app grid,
+     View ▸ Appearance is the toggle that stays in the bar, and the app menu's rows
+     — About, GitHub, Email, Contact — are windows a tap opens, so nothing is
+     hidden here; it is simply not part of a phone's furniture. What does go is the
+     availability dot (a lone colour swatch with no sentence to decode), the date
+     (the bar reads the time) and the battery's number, which the gauge carries. */
+  .menubar__availability,
+  .menubar__clock-date,
+  .menubar__battery-value {
+    display: none;
+  }
+
+  .menubar__status {
+    gap: 0.3em;
+    padding: 0 0.24em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The exact reading, one step quieter than the bars that shape it. */
+  .menubar__battery-value {
+    font-size: 0.9em;
+    letter-spacing: 0;
+    opacity: 0.88;
+  }
+
+  /* The availability pill leaves the bar entirely. On a Mac it is a coloured
+     capsule holding a sentence; a lone green dot at the edge of a phone screen
+     says nothing the reader could decode, so the state stays where it is spelled
+     out — the lock screen, the welcome tile and Settings ▸ This Device. The
+     battery keeps its gauge and loses its number, which is what an iPhone shows
+     and what the width of this bar can hold: the exact percentage is a tap away
+     in the system tile, and the `title` still carries it. */
+
+  .theme-toggle {
+    width: var(--bar-control);
+    min-height: 0;
+    padding: 0;
+    border-radius: 50%;
+    /* The one filled item among the readings: over a bare bar, a control has to
+       look like it can be pressed, and the icon alone would read as a status. */
+    background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+    box-shadow: inset 0 0 0 0.5px var(--ios-rim);
+  }
+
+  .theme-toggle:hover {
+    background: color-mix(in srgb, var(--text-primary) 16%, transparent);
+  }
+
+  .theme-toggle:active {
+    transform: scale(0.92);
+    background: color-mix(in srgb, var(--text-primary) 24%, transparent);
+  }
+
+  .menu__popover {
+    min-width: min(300px, calc(100% - 24px));
+    border-radius: var(--ios-radius);
+  }
+
+  /* The gesture note reads like an iOS banner: a centred pill that dismisses
+     itself. */
+  .guard-note {
+    top: calc(var(--menubar-h) + 4px);
+    border-radius: var(--ios-radius);
+    background: color-mix(in srgb, var(--window-bg-solid) 84%, transparent);
+    box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.4), inset 0 0 0 0.5px var(--border-hairline);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    max-width: calc(100% - 20px);
+  }
+
+  .notice {
+    bottom: calc(var(--dock-h) + 8px);
+    left: var(--ios-inset);
+    right: var(--ios-inset);
+    border-radius: var(--ios-radius);
+  }
+
+  /* The two clusters share the bar with the island: at the narrowest common
+     width they have about 100px each, so the bar stops hugging the edge so hard.
+     `overflow: hidden` on the island's own label means a long app name costs
+     letters, never the readings. */
+  @media (max-width: 360px) {
+    .menubar {
+      padding-left: calc(7px + env(safe-area-inset-left, 0px));
+      padding-right: calc(7px + env(safe-area-inset-right, 0px));
+    }
+  }
+
+  /* The wallpaper on a Mac is a canvas you look *through* for an hour at a
+     time, and its grain and vignette are what keep a flat gradient from looking
+     like a CSS accident. At 390px the same film sits two centimetres from the
+     eye, under frosted glass, and reads as dirt — so the phone keeps the
+     gradient and the bloom and loses the rest. */
+  .wallpaper__grain,
+  .wallpaper__vignette {
+    display: none;
+  }
+
+  /* ------------------------------------------------------ the settings app -- */
+  /* The same window, re-plumbed: on a phone the pane list *is* the app's first
+     screen and the chosen pane replaces it, which is how Settings works on iOS.
+     No second column squeezed into 390px, no horizontally scrolling sidebar, and
+     the row you came from is not left highlighted behind you. */
+
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-sidebar {
+    padding: 2px 0 22px;
+    background: transparent;
+    border-right: 0;
+  }
+
+  .settings[data-open=''] .settings-detail {
+    display: none;
+  }
+
+  .settings:not([data-open='']) .settings-sidebar {
+    display: none;
+  }
+
+  .settings-detail {
+    padding: 0 var(--ios-inset) 26px;
+  }
+
+  /* The back row stays with you while the pane scrolls, the way a nav bar does. */
+  .settings-detail__bar {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    margin: 0 calc(-1 * var(--ios-inset)) 10px;
+    padding: 6px var(--ios-inset) 8px;
+    background: color-mix(in srgb, var(--window-bg) 86%, transparent);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+  }
+
+  .settings-list {
+    gap: 1px;
+    overflow: hidden;
+    border-radius: var(--ios-radius);
+    background: var(--window-elevated);
+    box-shadow: inset 0 0 0 0.5px var(--border-hairline);
+  }
+
+  .settings-list__item {
+    min-height: 48px;
+    padding: 10px;
+    border-radius: 0;
+    font-size: 15px;
+    font-weight: 460;
+  }
+
+  .settings-list__item:active {
+    background: var(--fill-active);
+  }
+
+  .settings-list__item[aria-current='true'] {
+    background: transparent;
+    color: var(--text-secondary);
+    box-shadow: none;
+  }
+
+  /* iOS colours the little badge on each settings row. */
+  .settings-list__icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .settings-list__item[aria-current='true'] .settings-list__icon {
+    background: var(--accent);
+  }
+
+  .settings-list__chevron {
+    display: block;
+  }
+
+  .settings-switch {
+    width: 51px;
+    height: 31px;
+  }
+
+  .settings-switch__knob {
+    width: 27px;
+    height: 27px;
+  }
+
+  .settings-switch--on .settings-switch__knob {
+    transform: translateX(20px);
+  }
+
+  .settings-switch:active .settings-switch__knob {
+    width: 30px;
+  }
+
+  .settings-stepper button {
+    min-height: 34px;
+  }
+
+  /* --------------------------------------------------------------- the app -- */
+  /* An app occupies the whole screen with no frame, no rounded outer corners and
+     no traffic lights: one action, top right, like a modal sheet. */
+
+  /* The surface already stops at the tab bar (see .desktop__surface above), so
+     the app fills it — reserving the bar on the window as well would leave a band
+     of wallpaper between the app and its own tab bar. */
+  .window,
+  .window[data-maximized='true'] {
+    top: 0;
+    bottom: 0;
+    left: env(safe-area-inset-left, 0px);
+    right: env(safe-area-inset-right, 0px);
+    border-radius: 0;
+  }
+
+  /* `data-focused` belongs in this list rather than above it: on a Mac the
+     frontmost window is ringed with the accent colour to say *this* one, and that
+     rule outranks the plain surface rule. On a phone there is one window, it is
+     the whole screen, and the ring survives only as a line where the sheet meets
+     its tab bar — emphasis with nothing left to emphasise. */
+  .window__surface,
+  .window[data-fit='false'] .window__surface,
+  .window[data-maximized='true'] .window__surface,
+  .window[data-focused='true'] .window__surface {
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--window-bg-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .window__titlebar {
+    position: relative;
+    height: calc(var(--menubar-h) + 44px);
+    padding-top: var(--menubar-h);
+    padding-bottom: 6px;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    background: color-mix(in srgb, var(--window-bg-solid) 88%, transparent);
+    backdrop-filter: var(--backdrop-blur-soft);
+    -webkit-backdrop-filter: var(--backdrop-blur-soft);
+  }
+
+  .window__title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .window__lights {
+    position: absolute;
+    right: var(--ios-inset);
+    bottom: 6px;
+    gap: 10px;
+  }
+
+  .light,
+  .window[data-focused='false'] .light {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--fill-quaternary);
+    box-shadow: inset 0 0 0 0.5px var(--border-hairline);
+  }
+
+  /* A finger never hovers, so a mark that waits for a pointer is a mark that never
+     arrives: the close glyph is drawn full-size and full-ink here. */
+  .light svg {
+    width: 13px;
+    height: 13px;
+    opacity: 1;
+  }
+
+  /* Minimise and Zoom are desktop ideas: on a phone closing returns you to the
+     home screen, which is where minimising would have put you. */
+  .light--minimize,
+  .light--zoom {
+    display: none;
+  }
+
+  .window__body {
+    padding-top: 0;
+  }
+
+  .window__statusbar {
+    display: none;
+  }
+
+  /* ------------------------------------------------------ the home screen -- */
+  /* An iPhone's home screen is a grid of icons over the wallpaper. That is what
+     this is now: the widget band and the date line are gone, because a reading on
+     a home screen is a second place for the same number to go stale — the clock is
+     in the bar, the sky and the machine are in the desktop rail and in Settings ▸
+     This Device, and the direct lines are in Contact. What is left has to be
+     tappable, so the only surfaces here are the icons, the pill and the dock. */
+
+  .ioshome {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 18px;
+    height: 100%;
+    box-sizing: border-box;
+    /* the bar is outside this box, so the last row only needs breathing room */
+    padding: calc(var(--menubar-h) + 18px) var(--ios-inset) var(--space-5);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    text-align: center;
+  }
+
+  .ioshome__grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px 8px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ioshome__cell {
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    font: inherit;
+    color: var(--text-primary);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .ioshome__cell:active {
+    transform: scale(0.92);
+  }
+
+  .ioshome__cell-label {
+    max-width: 100%;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .ioshome__search {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    padding: 5px 13px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--window-bg-solid) 58%, transparent);
+    box-shadow: inset 0 0 0 0.5px var(--border-hairline);
+    backdrop-filter: var(--backdrop-blur-soft);
+    -webkit-backdrop-filter: var(--backdrop-blur-soft);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ---------------------------------------------------------------- the dock -- */
+  /* A floating glass pill on the home screen with no labels (iOS); flush and
+     labelled while an app is open, where it is a tab bar. */
+
+  .mobilebar {
+    inset: auto 8px calc(var(--ios-indicator-h) + 4px + env(safe-area-inset-bottom, 0px)) 8px;
+    height: auto;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 8px 9px;
+    overflow: visible;
+    border-radius: 28px;
+    box-shadow: 0 10px 26px -18px rgba(0, 0, 0, 0.3), inset 0 0 0 0.5px var(--border);
+  }
+
+  .mobilebar[data-app-open='true'] {
+    inset: auto 0 0 0;
+    height: var(--dock-h);
+    align-items: flex-end;
+    padding: 2px 8px calc(var(--ios-indicator-h) + env(safe-area-inset-bottom, 0px));
+    border-radius: 0;
+    box-shadow: 0 -1px 0 var(--border-hairline);
+  }
+
+  .mobilebar[data-app-open='false'] .mobilebar__label {
+    /* the icons are labelled by the grid right above them; inside an app the
+       labels come back, because there the bar is a tab bar */
+    display: none;
+  }
+
+  .mobilebar__item {
+    min-height: 46px;
+    gap: 3px;
+    padding: 4px 2px 5px;
+    border-radius: 14px;
+  }
+
+  .mobilebar[data-app-open='false'] .mobilebar__item {
+    padding: 0;
+  }
+
+  .mobilebar__item:active {
+    transform: scale(0.9);
+  }
+
+  /* --------------------------------------------------------- home indicator -- */
+  /* The one control that is allowed to overlap everything, because on an iPhone
+     it does: it is drawn on top of the app, at the very bottom edge. */
+
+  .ioshome__homebar {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 96;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: calc(var(--ios-indicator-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 5px;
+    pointer-events: none;
+  }
+
+  .ioshome__homebar-button {
+    pointer-events: auto;
+    width: 140px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ioshome__homebar-button::after {
+    content: '';
+    display: block;
+    width: 136px;
+    height: 5px;
+    margin-inline: auto;
+    border-radius: var(--r-pill);
+    background: var(--text-primary);
+    opacity: 0.62;
+    transition: opacity var(--dur-fast) linear, transform var(--dur-fast) var(--ease-out);
+  }
+
+  .ioshome__homebar-button:disabled::after {
+    opacity: 0.28;
+  }
+
+  .ioshome__homebar-button:not(:disabled):active::after {
+    opacity: 0.9;
+    transform: scaleX(0.94);
+  }
+}
+
+/* A landscape iPhone has the width of a tablet and the height of a watch face:
+   same presentation, packed. The widget row scrolls sideways instead of pushing
+   height, so the grid goes to six columns and the dock loses its labels — the
+   app title in the nav bar and the notch say where you are, so nothing has to be
+   guessed from an icon alone. */
+@media (max-width: 880px) and (max-height: 480px), (max-height: 420px) and (pointer: coarse) {
+  :root {
+    --ios-indicator-h: 14px;
+    --dock-h: calc(4rem + env(safe-area-inset-bottom, 0px));
+    --phone-dock-icon: 38px;
+  }
+
+  .ioshome {
+    gap: 8px;
+    align-content: start;
+  }
+
+  /* The bar is built from these two numbers, so packing the height packs the
+     capsules, their contents and the room the sheet leaves for all three. */
+  :root {
+    --bar-island-h: 1.6rem;
+    --bar-control: 1.4rem;
+    --bar-gap: 0.22rem;
+  }
+
+  .menubar__app {
+    max-width: 26vw;
+  }
+
+  .ioshome__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px 6px;
+  }
+
+  .ioshome__cell-label,
+  .ioshome__search {
+    display: none;
+  }
+
+  .mobilebar[data-app-open='false'] .mobilebar__label {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   ALTERNATE SETTINGS, PHONE MATERIAL
+   Reduced transparency needs nothing here any more: the phone's home screen has
+   no blurred surface left to flatten, and the translucent sheets it does open are
+   already handled by the global rule in responsive.css. Forced colours is the one
+   mode that still has work to do, because the notch is drawn as a black object on
+   a background the user chooses — so its fill is dropped and its boundary drawn,
+   which keeps the label inside it readable instead of white-on-white.
+   ========================================================================== */
+
+@media (max-width: 767px) and (forced-colors: active),
+  (max-height: 560px) and (pointer: coarse) and (forced-colors: active) {
+  .menubar__left,
+  .ioshome__search,
+  .mobilebar {
+    border: 1px solid CanvasText;
+  }
+
+  .menubar__left {
+    background: Canvas;
+    color: CanvasText;
+  }
+}

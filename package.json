@@ -1,0 +1,26 @@
+{
+  "name": "macos-developer-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A macOS-inspired personal developer portfolio built with React, Vite, JSX and traditional CSS.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview --host",
+    "check": "node scripts/check.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "test": "node scripts/check.mjs && node scripts/smoke.mjs && REDUCED_MOTION=1 node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.59.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^29.1.1",
+    "vite": "^6.4.4"
+  }
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Rounak Kumar — Frontend Developer</title>
+    <!-- The app re-writes these from src/data/portfolio.js on mount (Desktop.jsx), so
+         this block is only what a crawler that runs no JavaScript gets to read. It is
+         kept word-for-word in step with `site` on purpose: two different sentences
+         about the same person is how a portfolio starts to look like a template. -->
+    <meta
+      name="description"
+      content="An interactive, desktop-style portfolio by Rounak Kumar: React projects, a printable résumé, skills, education, live widgets and direct contact."
+    />
+
+    <!-- Standing the site up from the Home Screen keeps the status bar glass and
+         the chrome away, which the safe-area insets already assume. Zoom is never
+         disabled: no maximum-scale, no user-scalable=no, anywhere. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Rounak Kumar" />
+
+    <!-- The one security policy that can be expressed in HTML, so it works on a
+         host that cannot send headers. The rest live in public/_headers. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eceef1" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050507" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rounak Kumar — Developer Portfolio" />
+    <meta property="og:title" content="Rounak Kumar — Frontend Developer" />
+    <meta
+      property="og:description"
+      content="React projects, a printable résumé, skills, education, live widgets and direct contact — one desktop-style page."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Rounak Kumar — Frontend Developer" />
+
+    <!-- A Home Screen tile is drawn from this file, not from the SVG favicon, and iOS
+         rounds the corners itself: the art is a full-bleed square of the same
+         gradient as /favicon.svg, because a pre-rounded squircle would be masked a
+         second time and arrive with cut corners. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- og:image, og:url and rel=canonical are emitted by the app once
+         SITE_URL in src/data/portfolio.js names a real origin. -->
+
+    <!--
+      Applies the saved appearance (or the system preference on a first visit) before the
+      first paint, so the desktop never flashes the wrong theme. Keep the keys in sync with
+      src/hooks/useTheme.js.
+    -->
+    <script>
+      (function () {
+        var KEY = '***';
+        var preference = 'system';
+        try {
+          var stored = window.localStorage.getItem(KEY);
+          if (stored === 'light' || stored === 'dark' || stored === 'system') preference = stored;
+        } catch (error) {
+          /* storage blocked — fall back to the system preference */
+        }
+        var dark =
+          preference === 'dark' ||
+          (preference === 'system' &&
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var root = document.documentElement;
+        root.setAttribute('data-theme', dark ? 'dark' : 'light');
+        root.setAttribute('data-theme-preference', preference);
+        root.style.backgroundColor = dark ? '#121318' : '#eceef5';
+      })();
+    </script>
+    <style>
+      html {
+        background-color: #eceef1;
+      }
+      html[data-theme='dark'] {
+        background-color: #050507;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      This portfolio is a React application. Enable JavaScript, or contact Rounak Kumar
+      directly by email or on GitHub.
+    </noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

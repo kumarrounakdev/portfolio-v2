@@ -1,0 +1,594 @@
+/* ==========================================================================
+   RESPONSIVE + TOUCH
+   Desktop ≥1024 · Tablet 768–1023 · Compact <768
+   On compact screens the desktop metaphor is kept but re-expressed: windows
+   become sheets, the Dock becomes a bottom bar, hover-only behaviour disappears.
+   The last section is about the finger itself: hit areas, the 16px input floor
+   that stops iOS zooming a page mid-typing, and the safe-area insets.
+   ========================================================================== */
+
+/* --------------------------------------------------------------- tablet -- */
+/* The tablet range stops where the phone one begins, so a landscape phone
+   is never handed both sets of rules and left to tie-break on source order. */
+@media (min-width: 768px) and (max-width: 1023px) and (min-height: 561px) {
+  :root {
+    --desk-pad: 16px;
+    --dock-icon: 40px;
+    --dock-slot: 58px;
+    --dock-h: 4.75rem;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    padding: var(--space-5);
+  }
+
+  .contact-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .desktop__icons {
+    display: none;
+  }
+
+  .finder {
+    grid-template-columns: 170px minmax(0, 1fr);
+  }
+
+  .window__title-caption {
+    display: none;
+  }
+
+  /* A toolbar with a title, a search field, a sort select and a view switch
+     cannot sit on one line in 620px: let it wrap instead of shrinking the
+     controls below a hittable size. */
+  .finder__toolbar {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* never fewer than two columns' worth of card on a tablet, and never a card
+     wider than the pane it lives in */
+  .proj-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr));
+    gap: var(--space-3);
+  }
+}
+
+/* -------------------------------------------------------------- compact -- */
+@media (max-width: 767px), (max-height: 560px) and (pointer: coarse) {
+  :root {
+    --menubar-h: calc(2.65rem + env(safe-area-inset-top, 0px));
+    --dock-h: calc(4.125rem + env(safe-area-inset-bottom, 0px));
+    --desk-pad: 0px;
+    --text-base: 0.9375rem;
+    --text-sm: 0.875rem;
+    --text-2xl: 1.75rem;
+    --space-6: 22px;
+    --space-7: 26px;
+  }
+
+  .menubar {
+    padding: 0 8px;
+    font-size: var(--text-sm);
+  }
+
+  .menubar__trigger,
+  .theme-toggle {
+    height: 30px;
+    padding: 0 9px;
+  }
+
+  .menu__popover {
+    min-width: min(280px, calc(100vw - 20px));
+  }
+
+  .menu__item {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    font-size: var(--text-sm);
+  }
+
+  .menubar__clock,
+  .menubar__status {
+    display: none;
+  }
+
+  .menubar {
+    gap: var(--space-2);
+    padding-inline: calc(6px + env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-right, 0px));
+  }
+
+  .menubar__trigger {
+    padding: 0 7px;
+  }
+
+  /* Clipped rather than display:none: the pill is still a real button on touch
+     screens, so its name has to survive for assistive tech. */
+  .menubar__availability-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .menubar__availability {
+    padding: 0 7px;
+  }
+
+  .desktop__surface {
+    inset: var(--menubar-h) 0 0 0;
+    padding: 0;
+    display: block;
+    overflow: hidden;
+  }
+
+  .desktop__icons,
+  .dock-shell {
+    display: none;
+  }
+
+  .mobilebar {
+    display: flex;
+  }
+
+  /* Windows become sheets that fill the desktop area. */
+  .window {
+    position: absolute;
+    /* a sheet in landscape runs to the screen edge, so it has to respect the
+       notch on one side and the rounded corner on the other */
+    left: env(safe-area-inset-left, 0px);
+    right: env(safe-area-inset-right, 0px);
+    top: 4px;
+    bottom: var(--dock-h);
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    transform: none;
+  }
+
+  .window__surface,
+  .window[data-fit='false'] .window__surface {
+    height: 100%;
+    max-height: none;
+    border-radius: var(--r-lg);
+  }
+
+  /* "Zoom" on a phone means full-bleed: it still must not cover the tab bar. */
+  .window[data-maximized='true'] {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: var(--dock-h);
+    border-radius: 0;
+  }
+
+  .window[data-maximized='true'] .window__surface {
+    border-radius: 0;
+  }
+
+  .window__titlebar {
+    height: 46px;
+    cursor: default !important;
+  }
+
+  .light {
+    width: 14px;
+    height: 14px;
+  }
+
+  .window__title {
+    font-size: var(--text-base);
+  }
+
+  .win-pad,
+  .hero {
+    padding: var(--space-4);
+  }
+
+  .avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    font-size: 22px;
+  }
+
+  .about-grid,
+  .contact-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .finder {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .finder__sidebar {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-hairline);
+    scrollbar-width: none;
+  }
+
+  .finder__sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .finder__sidebar .sidebar__group-label,
+  .finder__sidebar .sidebar__footer,
+  .finder__sidebar .sidebar__count {
+    display: none;
+  }
+
+  .sidebar__item {
+    padding: 7px 11px;
+    border-radius: var(--r-pill);
+    background: var(--fill-quaternary);
+    white-space: nowrap;
+  }
+
+  .finder__toolbar {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .finder__title {
+    width: 100%;
+    margin-right: 0;
+    order: -1;
+  }
+
+  .search-field {
+    flex: 1;
+    width: auto;
+    min-width: 120px;
+  }
+
+  .search-field input,
+  .select-field select {
+    height: 34px;
+    font-size: var(--text-sm);
+  }
+
+  .proj-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .proj-grid--list .proj-thumb {
+    width: 78px;
+  }
+
+  .proj-details__masthead {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4) var(--space-3);
+  }
+
+  .proj-details__thumb {
+    max-width: 168px;
+  }
+
+  .proj-details__inner,
+  .proj-details__actions {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .proj-details__actions .btn,
+  .hero__cta .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sheet-actions {
+    display: flex;
+  }
+
+  .notice {
+    left: 12px;
+    right: 12px;
+    bottom: calc(var(--dock-h) + 10px);
+    width: auto;
+  }
+
+  .btn {
+    height: 40px;
+    padding: 0 var(--space-4);
+    font-size: var(--text-base);
+  }
+
+  .btn--sm {
+    height: 32px;
+    font-size: var(--text-xs);
+  }
+
+  .link-btn {
+    height: 30px;
+    padding: 0 10px;
+    font-size: var(--text-xs);
+  }
+
+  .window__statusbar {
+    display: none;
+  }
+}
+
+/* Landscape phones / short viewports: keep the composition usable. */
+@media (max-width: 880px) and (max-height: 480px), (max-height: 420px) and (pointer: coarse) {
+  .desktop__surface {
+    inset: var(--menubar-h) 0 var(--dock-h) 0;
+  }
+
+  .mobilebar__item {
+    min-height: 44px;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  /* A 480px-tall window has no room for chrome that is not doing work. */
+  .window__statusbar,
+  .window__title-caption {
+    display: none;
+  }
+
+  .hero {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 17px;
+  }
+
+}
+
+/* Windows are sized in CSS pixels; cap them so nothing overflows a narrow laptop. */
+@media (min-width: 768px) {
+  .window {
+    max-width: calc(100% - 2 * var(--desk-pad));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .window__surface,
+  .proj-card,
+  .skill-group,
+  .channel {
+    transition: none !important;
+  }
+}
+
+/* Below 1200px a 1000px window and a 176px column cannot both breathe, so the
+   squares give up 24px and the window keeps its measure. */
+@media (min-width: 1024px) and (max-width: 1200px) {
+  :root {
+    --widget-size: 152px;
+  }
+}
+
+/* ================================================================== touch ==
+   A finger is about 44px wide. Nothing here changes how the interface looks
+   with a mouse; it changes what is hittable, what a tap selects, and how big
+   a control's type has to be before iOS decides to zoom the whole page.
+   ======================================================================== */
+
+/* A window that has reached the end of its own scroll must not drag the
+   desktop with it, and a flick should keep gliding. */
+.window__body,
+.scroll-area {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-block: var(--space-4);
+}
+
+/* A sheet is panned with a thumb: give the bottom bar the same insets as the
+   bar at the top so nothing hides under the home indicator. */
+.mobilebar {
+  padding-left: calc(8px + env(safe-area-inset-left, 0px));
+  padding-right: calc(8px + env(safe-area-inset-right, 0px));
+}
+
+.mobilebar__item {
+  min-height: 44px;
+}
+
+/* A tap must not leave a card looking pressed, or an arrow slid aside, until the
+   next tap somewhere else: hover-only effects are switched off entirely. */
+@media (hover: none) {
+  .proj-card:hover,
+  .channel:hover .channel__go {
+    transform: none;
+  }
+
+  .proj-card:hover {
+    box-shadow: var(--shadow-card);
+  }
+}
+
+@media (pointer: coarse) {
+  /* The traffic lights stay 14px — that is what they look like — but each one
+     gets a 44px-tall band to be hit in. The band grows into the gap between the
+     three and no further, so no button ever swallows its neighbour. */
+  .light {
+    width: 14px;
+    height: 14px;
+    /* …and the glyph inside it stays visible, because nothing is hovered */
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  .light::after {
+    content: '';
+    position: absolute;
+    inset: -15px -4px;
+  }
+
+  .light,
+  .menubar__trigger,
+  .mobilebar__item,
+  .dock__link {
+    -webkit-touch-callout: none;
+  }
+
+  /* There is no hover on a touch screen, so the two things macOS only reveals
+     under a cursor are simply always on: the glyph in a traffic light (just
+     above) and the line on a project card that says it can be opened. A plain
+     red dot is a guess, and a card with no cue is a dead end. */
+  .window[data-focused='false'] .light {
+    color: rgba(0, 0, 0, 0.32);
+  }
+
+  .proj-card__cta {
+    opacity: 1;
+    transform: none;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn--sm {
+    min-height: 38px;
+  }
+
+  .link-btn,
+  .menubar__trigger,
+  .theme-toggle,
+  .menubar__availability,
+  .sidebar__item,
+  .segmented__option,
+  .notice__dismiss,
+  .guard-note__close {
+    min-height: 40px;
+  }
+
+  .sidebar__item {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .menu__item {
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+
+  /* Small round controls keep their drawn size and gain a hit area. */
+  .guard-note__close,
+  .notice__dismiss,
+  .search-field__clear {
+    position: relative;
+  }
+
+  .guard-note__close::after,
+  .notice__dismiss::after,
+  .search-field__clear::after {
+    content: '';
+    position: absolute;
+    inset: -12px;
+  }
+
+  /* iOS zooms the page — and leaves it zoomed — when a focused control types
+     smaller than 16px. max() keeps the design's own scale wherever it is
+     already larger. */
+  input,
+  select,
+  textarea {
+    font-size: max(1rem, 0.94em);
+  }
+
+  .search-field input,
+  .select-field select {
+    min-height: 40px;
+  }
+
+  .term__input {
+    min-height: 40px;
+    font-size: max(1rem, 0.94em);
+  }
+
+  /* Dragging a window on a tablet is a touch gesture: the title bar takes it
+     for itself, so the page never scrolls sideways under the finger. Sheets
+     are not draggable, so they keep their normal panning. */
+  @media (min-width: 768px) {
+    .window__titlebar {
+      touch-action: none;
+      user-select: none;
+    }
+  }
+}
+
+/* The tiles were measured for a wallpaper seen from an arm's length; inside a
+   sheet they sit at reading distance, so their type comes up to body copy. */
+@media (max-width: 767px), (max-height: 560px) and (pointer: coarse) {
+  .widget {
+    padding: var(--space-4);
+  }
+
+  .widget__caption,
+  .widget__row,
+  .weather__meta {
+    font-size: 12px;
+  }
+
+  .clock__time {
+    font-size: 17px;
+  }
+}
+
+/* ==========================================================================
+   ALTERNATE SETTINGS
+   These are not responsive to size but to a preference, and a glass interface
+   in particular has to obey the first one: translucency is a decoration, not a
+   part of the layout, so it can be turned off without anything disappearing.
+   ========================================================================== */
+
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  [data-theme='light'],
+  [data-theme='dark'] {
+    --window-bg: var(--window-bg-solid);
+    --widget-tint: var(--window-bg-solid);
+    --menubar-bg: var(--window-bg-solid);
+    --dock-bg: var(--window-bg-solid);
+    --backdrop-blur: none;
+    --backdrop-blur-soft: none;
+  }
+
+  .window__surface,
+  .menubar,
+  .dock,
+  .mobilebar,
+  .widget,
+  .menu__popover {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* High-contrast modes replace the shadows that separate a window from the
+   wallpaper, so the boundaries are drawn instead. */
+@media (forced-colors: active) {
+  .window__surface,
+  .widget,
+  .proj-card,
+  .dock,
+  .mobilebar,
+  .menu__popover {
+    border: 1px solid CanvasText;
+  }
+
+  :focus-visible {
+    outline: 3px solid Highlight;
+    outline-offset: 1px;
+  }
+}

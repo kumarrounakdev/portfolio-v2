@@ -1,0 +1,402 @@
+/* ==========================================================================
+   DESIGN TOKENS
+   Every colour, radius, shadow, duration and size the desktop uses is defined
+   here once. Components never hard-code a colour; they reference a token so the
+   light and dark appearances stay deliberate instead of inverted.
+   ========================================================================== */
+
+:root {
+  /* ---- typography ---- */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue',
+    Helvetica, Arial, 'Segoe UI', Roboto, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Mono', Consolas,
+    monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.375rem;
+  --text-2xl: clamp(1.75rem, 1.2rem + 1.9vw, 2.5rem);
+
+  --tracking-tight: -0.02em;
+  --tracking-caps: 0.06em;
+
+  /* ---- spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 22px;
+  --space-6: 28px;
+  --space-7: 36px;
+
+  /* ---- radii ---- */
+  --r-xs: 5px;
+  --r-sm: 7px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-window: 12px;
+  --r-pill: 999px;
+  --r-squircle: 22.5%; /* the proportion macOS and iOS both cut their app tiles at */
+
+  /* ---- motion ---- */
+  --dur-xs: 90ms;
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 340ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.42, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+
+  /* ---- desktop chrome ---- */
+  /* The bar owns the notch: every consumer of this token (the window layer,
+     the desktop icons, the widget rail, the guard note) is pushed clear of it
+     for free, and env() is 0 everywhere without one. Rem, not px, so that a
+     visitor who has raised their text size gets a bar that still holds it. */
+  --menubar-h: calc(1.9rem + env(safe-area-inset-top, 0px));
+  --dock-slot: 54px;
+  --dock-h: 4.9rem;
+  --dock-icon: 46px;
+  --desk-pad: 24px;
+  --content-max: 1180px;
+
+  /* ---- traffic lights ---- */
+  /* Three grey dots at the same lightness, so the row reads as one object, and the
+     hue macOS gives them is not needed: a label names each control and this theme
+     spends its colour on things that mean something. `--light-glyph` is the ink of
+     the mark inside each one — see the rules in `windows.css`, which paint it on the
+     glyph itself rather than letting it inherit through the dot. */
+  --light-close: var(--light-idle);
+  --light-close-edge: var(--border-strong);
+  --light-min: var(--light-idle);
+  --light-min-edge: var(--border-strong);
+  --light-zoom: var(--light-idle);
+  --light-zoom-edge: var(--border-strong);
+
+  /* ---- the phone inside the desktop ---- */
+  /* A second presentation of the same portfolio, sized by one `font-size`
+     (see phone.css), so everything below is a colour or a single gutter
+     measure rather than a length. `--phone-space` is 0 until the media query
+     that renders the floating device reserves room for it, which keeps the
+     desktop layout identical on a smaller screen. */
+  --phone-space: 0px;
+  --phone-ink: var(--text-primary);
+  --phone-ink-dim: var(--text-secondary);
+  --phone-hairline: var(--border-hairline);
+  --phone-tint: var(--accent);
+  --phone-accent: var(--accent);
+  --phone-wall-a: var(--desk-a);
+  --phone-wall-b: var(--desk-b);
+  --phone-wall-c: var(--desk-c);
+
+  /* ---- status ---- */
+  /* Availability is the one accent and a pulse, not a traffic light: filled and
+     breathing is open, a flat mid-grey is anything else, and the word beside the
+     dot is always printed — so the state never depends on a reader matching a
+     hue to a meaning, and a charging battery can borrow the same token. */
+  --status-available: var(--accent);
+  --status-busy: var(--text-tertiary);
+  --status-away: color-mix(in srgb, var(--text-tertiary) 60%, transparent);
+}
+
+/* ========================== LIGHT APPEARANCE ============================ */
+/* Ash and white glass. There is no blue in the wallpaper and no colour in the
+   chrome: what makes a surface legible here is how much light its top edge
+   catches, and how much of the desktop shows through it. */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* wallpaper — one light source, slightly warmer at the top left, and a shade
+     of grey in the corner farthest from it */
+  --desk-base: #e6e8ec;
+  --desk-a: #f8f9fb;
+  --desk-b: #d5d8de;
+  --desk-c: #e6e8ec;
+  --desk-highlight: rgba(255, 255, 255, 0.92);
+  --desk-vignette: rgba(22, 24, 30, 0.12);
+
+  /* surfaces */
+  /* Widgets float on the wallpaper rather than in a window, so they get a
+     lighter, cooler tint and a bright hairline along the top edge. */
+  --widget-tint: rgba(255, 255, 255, 0.52);
+  --widget-ink: #14161c;
+  --widget-edge: rgba(255, 255, 255, 0.85);
+  --widget-hairline: rgba(20, 24, 40, 0.08);
+
+  --phone-screen: #f3f4f6;
+  --phone-surface: rgba(255, 255, 255, 0.62);
+  --window-bg: rgba(252, 252, 253, 0.74);
+  --window-bg-solid: #fdfdfe;
+  --window-elevated: #ffffff;
+  --window-sunken: rgba(232, 234, 239, 0.7);
+  --titlebar-bg: rgba(246, 247, 249, 0.7);
+  --titlebar-fg: #33363e;
+  --sidebar-bg: rgba(239, 241, 245, 0.6);
+  --sidebar-fg: #474b55;
+
+  /* text */
+  --text-primary: #101216;
+  --text-secondary: #4a4f59;
+  --text-tertiary: #7c828d;
+
+  /* lines + fills */
+  --border-hairline: rgba(16, 18, 24, 0.07);
+  --border: rgba(16, 18, 24, 0.12);
+  --border-strong: rgba(16, 18, 24, 0.2);
+  --fill-hover: rgba(16, 18, 24, 0.05);
+  --fill-active: rgba(16, 18, 24, 0.09);
+  --fill-subtle: rgba(110, 116, 128, 0.12);
+  --fill-quaternary: rgba(110, 116, 128, 0.08);
+
+  /* accent — the only hue in either appearance, and it is spent on things that
+     mean something: a link, a focus ring, the selected tab, the status dot */
+  --accent: #2f5fd0;
+  --accent-soft: rgba(47, 95, 208, 0.1);
+  --accent-contrast: #ffffff;
+  --selection: rgba(47, 95, 208, 0.18);
+
+  /* The contribution graph's ramp. Opaque, not alpha: 18% of a colour over a
+     near-white sheet is a near-white square, which is what made this grid all but
+     invisible in the light appearance. Each step is the accent mixed with white at
+     a stronger proportion, so the four levels are four different colours rather
+     than four transparencies, and the top one is the accent itself.
+     Measured against --contrib-empty: 2.1 : 1, 2.7 : 1, 3.5 : 1, 4.5 : 1. The
+     palest step started at 1.5 : 1 and read as "almost nothing happened that day" —
+     a year of light activity disappeared into the sheet. scripts/check.mjs
+     re-measures both ramps on every run. */
+  --contrib-empty: #e2e4e9;
+  --contrib-edge: rgba(16, 18, 24, 0.09);
+  --contrib-1: color-mix(in srgb, var(--accent) 60%, #ffffff);
+  --contrib-2: color-mix(in srgb, var(--accent) 74%, #ffffff);
+  --contrib-3: color-mix(in srgb, var(--accent) 88%, #ffffff);
+  --contrib-4: var(--accent);
+
+
+  /* buttons */
+  --btn-primary-bg: #121317;
+  --btn-primary-fg: #ffffff;
+  --btn-neutral-bg: rgba(255, 255, 255, 0.8);
+  --btn-neutral-fg: #14161c;
+  --btn-tinted-bg: rgba(47, 95, 208, 0.08);
+
+  /* chrome */
+  --menubar-bg: rgba(248, 249, 251, 0.55);
+  --menubar-fg: #1c1e24;
+  --menubar-border: rgba(16, 18, 24, 0.08);
+  --menu-popover-bg: rgba(250, 251, 252, 0.82);
+  --dock-bg: rgba(255, 255, 255, 0.42);
+  --dock-border: rgba(255, 255, 255, 0.7);
+  --dock-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --tooltip-bg: rgba(16, 17, 21, 0.88);
+  --tooltip-fg: #f6f7f8;
+  --notification-bg: rgba(252, 252, 253, 0.8);
+
+  /* code / terminal — the terminal stays a black pane in both appearances: it is
+     a shell, and a white one is a lie about what it is */
+  --code-bg: rgba(232, 234, 239, 0.85);
+  --code-fg: #1a1c21;
+  --terminal-bg: rgba(12, 13, 15, 0.92);
+  --terminal-fg: #e9eaee;
+  --terminal-muted: #8b8f99;
+
+  /* shadows */
+  --shadow-hairline: 0 0 0 0.5px var(--border);
+  --shadow-window: 0 1px 2px rgba(14, 16, 22, 0.08), 0 12px 28px -8px rgba(14, 16, 22, 0.18),
+    0 40px 80px -32px rgba(14, 16, 22, 0.3), 0 0 0 0.5px rgba(16, 18, 24, 0.14);
+  --shadow-window-active: 0 2px 4px rgba(14, 16, 22, 0.1), 0 20px 46px -12px rgba(14, 16, 22, 0.26),
+    0 60px 110px -40px rgba(14, 16, 22, 0.38), 0 0 0 0.5px rgba(16, 18, 24, 0.18);
+  --shadow-popover: 0 2px 6px rgba(14, 16, 22, 0.1), 0 18px 40px -14px rgba(14, 16, 22, 0.24),
+    0 0 0 0.5px rgba(16, 18, 24, 0.14);
+  --shadow-card: 0 1px 2px rgba(14, 16, 22, 0.06), 0 0 0 0.5px rgba(16, 18, 24, 0.08);
+  --shadow-card-hover: 0 2px 6px rgba(14, 16, 22, 0.1), 0 18px 34px -18px rgba(14, 16, 22, 0.26),
+    0 0 0 0.5px rgba(16, 18, 24, 0.12);
+  --wallpaper-grain: 0.04;
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  --shadow-titlebar: 0 1px 0 rgba(14, 16, 22, 0.05), 0 8px 14px -12px rgba(14, 16, 22, 0.24);
+
+  /* controls */
+  --scrollbar-thumb: rgba(100, 106, 118, 0.36);
+  --scrollbar-thumb-hover: rgba(74, 80, 92, 0.58);
+  --light-idle: rgba(110, 116, 128, 0.32);
+  /* The mark inside a dot has to survive the dot it sits on: the same black ink
+     that reads on an ash disc disappears on the graphite one, so each appearance
+     names its own. */
+  --light-glyph: rgba(24, 26, 32, 0.74);
+  /* The dot under a Dock tile that says "this app is still running, out of sight".
+     Asked for as a white dot, and it is one on the dark surface; on ash glass the
+     same white is a smudge you read as dirt, so the light appearance inks it. */
+  --dock-min-dot: rgba(24, 26, 32, 0.86);
+
+  --focus-ring: #2f5fd0;
+
+  /* app tiles — glass with the app's own hue allowed in as a shade, never as the
+     fill: the body is the same pale sheet every tile shares, `--icon-ink` is the
+     glyph on it, and `--icon-rim` is the light its top edge catches. */
+  --icon-neutral: #e9eaee;
+  --icon-glass-a: rgba(255, 255, 255, 0.9);
+  --icon-glass-b: rgba(211, 215, 223, 0.72);
+  --icon-rim: rgba(255, 255, 255, 0.92);
+  --icon-ink: #14161c;
+
+  /* the small-widget square: 2×2 in macOS units, and a corner generous enough
+     to read as the continuous curvature rather than a rounded rectangle */
+  --widget-size: 176px;
+  --widget-radius: 26px;
+
+  --backdrop-blur: saturate(112%) blur(24px);
+  --backdrop-blur-soft: saturate(108%) blur(16px);
+}
+
+/* ============================ DARK APPEARANCE =========================== */
+/* Black, and glass over it. The wallpaper is a graphite gradient with no hue to
+   speak of; every sheet above it is the same material at a different depth, so
+   the only colour left on screen is the one the accent is allowed to carry. */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --desk-base: #050507;
+  --desk-a: #101115;
+  --desk-b: #17181d;
+  --desk-c: #0a0b0e;
+  --desk-highlight: rgba(255, 255, 255, 0.06);
+  --desk-vignette: rgba(0, 0, 0, 0.74);
+
+  --widget-tint: rgba(20, 21, 24, 0.56);
+  --widget-ink: #f2f3f5;
+  --widget-edge: rgba(255, 255, 255, 0.16);
+  --widget-hairline: rgba(255, 255, 255, 0.1);
+
+  --phone-screen: #0a0b0d;
+  --phone-surface: rgba(255, 255, 255, 0.06);
+  --window-bg: rgba(17, 18, 21, 0.74);
+  --window-bg-solid: #121317;
+  --window-elevated: #191a1e;
+  --window-sunken: rgba(5, 5, 7, 0.66);
+  --titlebar-bg: rgba(25, 26, 30, 0.72);
+  --titlebar-fg: #d3d5da;
+  --sidebar-bg: rgba(11, 12, 14, 0.62);
+  --sidebar-fg: #a9adb6;
+
+  --text-primary: #f2f3f5;
+  --text-secondary: #b0b4bd;
+  --text-tertiary: #83878f;
+
+  --border-hairline: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --fill-hover: rgba(255, 255, 255, 0.06);
+  --fill-active: rgba(255, 255, 255, 0.12);
+  --fill-subtle: rgba(200, 205, 215, 0.14);
+  --fill-quaternary: rgba(200, 205, 215, 0.08);
+
+  --accent: #9ec1ff;
+  --accent-soft: rgba(158, 193, 255, 0.14);
+  --accent-contrast: #0a0d14;
+
+  /* Same ramp, built for a black sheet: the accent mixed into the window surface.
+     Against --contrib-empty these measure 2.2 : 1, 3.2 : 1, 4.6 : 1, 7.0 : 1. */
+  --contrib-empty: #22242a;
+  --contrib-edge: rgba(255, 255, 255, 0.07);
+  --contrib-1: color-mix(in srgb, var(--accent) 40%, var(--window-bg-solid));
+  --contrib-2: color-mix(in srgb, var(--accent) 55%, var(--window-bg-solid));
+  --contrib-3: color-mix(in srgb, var(--accent) 70%, var(--window-bg-solid));
+  --contrib-4: color-mix(in srgb, var(--accent) 90%, var(--window-bg-solid));
+  --selection: rgba(158, 193, 255, 0.24);
+
+  --btn-primary-bg: #f2f3f5;
+  --btn-primary-fg: #0b0c0e;
+  --btn-neutral-bg: rgba(38, 40, 45, 0.62);
+  --btn-neutral-fg: #eceef1;
+  --btn-tinted-bg: rgba(158, 193, 255, 0.12);
+
+  --menubar-bg: rgba(9, 10, 12, 0.5);
+  --menubar-fg: #e7e8ea;
+  --menubar-border: rgba(255, 255, 255, 0.08);
+  --menu-popover-bg: rgba(19, 20, 23, 0.84);
+  --dock-bg: rgba(16, 17, 20, 0.52);
+  --dock-border: rgba(255, 255, 255, 0.12);
+  --dock-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --tooltip-bg: rgba(242, 243, 245, 0.9);
+  --tooltip-fg: #101114;
+  --notification-bg: rgba(20, 21, 24, 0.86);
+
+  --code-bg: rgba(4, 4, 6, 0.62);
+  --code-fg: #e2e4e8;
+  --terminal-bg: rgba(3, 3, 4, 0.94);
+  --terminal-fg: #e8e9ec;
+  --terminal-muted: #8b8f99;
+
+  --shadow-hairline: 0 0 0 0.5px var(--border);
+  --shadow-window: 0 1px 2px rgba(0, 0, 0, 0.5), 0 14px 32px -10px rgba(0, 0, 0, 0.62),
+    0 44px 88px -36px rgba(0, 0, 0, 0.76), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  --shadow-window-active: 0 2px 6px rgba(0, 0, 0, 0.54), 0 24px 52px -14px rgba(0, 0, 0, 0.7),
+    0 64px 120px -44px rgba(0, 0, 0, 0.82), 0 0 0 0.5px rgba(255, 255, 255, 0.16);
+  --shadow-popover: 0 2px 8px rgba(0, 0, 0, 0.46), 0 20px 44px -16px rgba(0, 0, 0, 0.62),
+    0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.34), 0 0 0 0.5px rgba(255, 255, 255, 0.07);
+  --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.4), 0 20px 38px -20px rgba(0, 0, 0, 0.62),
+    0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  --wallpaper-grain: 0.05;
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-titlebar: 0 1px 0 rgba(0, 0, 0, 0.4), 0 10px 18px -14px rgba(0, 0, 0, 0.72);
+
+  /* controls */
+  --scrollbar-thumb: rgba(214, 219, 228, 0.2);
+  --scrollbar-thumb-hover: rgba(226, 230, 238, 0.36);
+  --light-idle: rgba(214, 219, 228, 0.26);
+  --light-glyph: rgba(240, 243, 250, 0.92);
+  --dock-min-dot: #f4f6fb;
+
+  --focus-ring: #9ec1ff;
+
+  /* app tiles — the same sheet of glass the desktop uses, cut from the top left;
+     the app's hue is mixed in as a shade behind the glyph, not as the tile */
+  --icon-neutral: #1b1c1f;
+  --icon-glass-a: rgba(62, 65, 71, 0.72);
+  --icon-glass-b: rgba(9, 10, 12, 0.86);
+  --icon-rim: rgba(255, 255, 255, 0.2);
+  --icon-ink: #f4f5f7;
+
+  --backdrop-blur: saturate(108%) blur(22px);
+  --backdrop-blur-soft: saturate(104%) blur(14px);
+}
+
+/* A reduced-motion visitor gets a calmer interface: instant appearance swaps. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-xs: 1ms;
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
+  }
+}
+
+/* The switch in Settings. A parsed stylesheet cannot re-ask the media query above,
+   so the same answer arrives as an attribute on <html>: the four durations, and a
+   hard stop for the rules that animate on `animation:` directly rather than on one
+   of them. Without the second half, "reduce motion" would leave the status pulse
+   and the phone's torch flickering while the windows politely held still. */
+html[data-motion='calm'] {
+  --dur-xs: 1ms;
+  --dur-fast: 1ms;
+  --dur: 1ms;
+  --dur-slow: 1ms;
+}
+
+html[data-motion='calm'] *,
+html[data-motion='calm'] *::before,
+html[data-motion='calm'] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}

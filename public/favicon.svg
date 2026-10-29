@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- A black tile with the initials on it, legible at 16px: two letters, tight
+       tracking, no border, no gradient. The corners are rounded because every
+       place a favicon is shown — a tab, a bookmark, a reader-mode chip — rounds
+       them anyway, and a square that is rounded by two different radii looks
+       chipped. `dominant-baseline` is avoided in favour of a measured dy so the
+       letters sit centred in engines that still disagree about it. -->
+  <rect width="64" height="64" rx="14" fill="#000000" />
+  <text
+    x="32"
+    y="32"
+    dy="0.35em"
+    text-anchor="middle"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+    font-size="30"
+    font-weight="800"
+    letter-spacing="-1.6"
+    fill="#ffffff"
+  >RK</text>
+</svg>
