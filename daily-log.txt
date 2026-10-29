@@ -7,3 +7,4 @@
 - Day 01 / checkpoint 06
 - Day 01 / checkpoint 07
 - Day 01 / checkpoint 08
+- Day 01 / checkpoint 09
