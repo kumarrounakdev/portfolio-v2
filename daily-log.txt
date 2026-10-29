@@ -10,3 +10,4 @@
 - Day 01 / checkpoint 09
 - Day 01 / checkpoint 10
 - Day 01 / checkpoint 11
+- Day 01 / checkpoint 12
