@@ -1,3 +1,4 @@
 # Portfolio v2 - daily log
 - Day 01 / checkpoint 01
 - Day 01 / checkpoint 02
+- Day 01 / checkpoint 03
