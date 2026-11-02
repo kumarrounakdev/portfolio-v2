@@ -31,3 +31,4 @@
 - Day 03 / checkpoint 05
 - Day 03 / checkpoint 06
 - Day 03 / checkpoint 07
+- Day 03 / checkpoint 08
