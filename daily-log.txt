@@ -49,3 +49,4 @@
 - Day 04 / checkpoint 09
 - Day 04 / checkpoint 10
 - Day 04 / checkpoint 11
+- Day 04 / checkpoint 12
