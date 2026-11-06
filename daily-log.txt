@@ -63,3 +63,4 @@
 - Day 05 / checkpoint 10
 - Day 05 / checkpoint 11
 - Day 05 / checkpoint 12
+- Day 05 / checkpoint 13
