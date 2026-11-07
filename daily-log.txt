@@ -80,3 +80,4 @@
 - Day 06 / checkpoint 14
 - Day 07 / checkpoint 01
 - Day 07 / checkpoint 02
+- Day 07 / checkpoint 03
