@@ -74,3 +74,4 @@
 - Day 06 / checkpoint 08
 - Day 06 / checkpoint 09
 - Day 06 / checkpoint 10
+- Day 06 / checkpoint 11
