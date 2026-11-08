@@ -70,3 +70,4 @@
 - Day 06 / checkpoint 04
 - Day 06 / checkpoint 05
 - Day 06 / checkpoint 06
+- Day 06 / checkpoint 07
