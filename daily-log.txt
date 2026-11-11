@@ -87,3 +87,4 @@
 - Day 07 / checkpoint 07
 - Day 07 / checkpoint 08
 - Day 07 / checkpoint 09
+- Day 07 / checkpoint 10
